@@ -22,15 +22,20 @@ def export_to_csv(data) -> None:
         writer = csv.DictWriter(csv_file, fieldnames)
         writer.writeheader()
         writer.writerows(data)
-
     pass
 
 
 def write_img(img, img_name)-> None:
+    '''
+    Writes out masked tif for given color
+    '''
     cv2.imwrite(os.path.join(OUT_IMG_PATH,f'{img_name}'), img)
     pass
 
 def calculate_threshold_vals(img_data, img, pixels_all, img_name)-> dict:
+    '''
+    Calculates absolute and relative amount of pixels of given color specified by COLOR_THRESHOLDS
+    '''
     update_img_data = img_data
     color_sum = 0
     relative_color_counts = {}
@@ -60,6 +65,9 @@ def calculate_threshold_vals(img_data, img, pixels_all, img_name)-> dict:
     return update_img_data
 
 def get_image_statistics(images_to_compute:list) -> list:
+    '''
+    Calculates general statistics for img
+    '''
     data = []
     for img in images_to_compute:
         loaded_img = cv2.imread(img)
@@ -88,6 +96,9 @@ def get_image_statistics(images_to_compute:list) -> list:
 
 
 def main():
+    '''
+    Loads all images from \\img folder, exports results to csv
+    '''
     images_to_compute = [os.path.join(IN_IMG_PATH, img_p)for img_p in os.listdir(IN_IMG_PATH)]
     export_to_csv(get_image_statistics(images_to_compute)) 
 pass
