@@ -3,9 +3,9 @@ import numpy as np
 import os
 import csv
 
-IN_IMG_PATH = 'analyticka_kartografie\cv_1\img'
-OUT_IMG_PATH = 'analyticka_kartografie\cv_1\out_img'
-CSV_FOLDER_PATH = 'analyticka_kartografie\cv_1\csv_out'
+IN_IMG_PATH = 'cv_1\img'
+OUT_IMG_PATH = 'cv_1\out_img'
+CSV_FOLDER_PATH = 'cv_1\csv_out'
 COLOR_THRESHOLDS = {
     'black': {'min': [0,0,0], 'max': [15,15,15]},
     'grey': {'min': [57,57,57], 'max': [72,72,72]},
@@ -33,7 +33,7 @@ def write_img(img, img_name)-> None:
     cv2.imwrite(os.path.join(OUT_IMG_PATH,f'{img_name}.tif'), img)
     pass
 
-def calculate_threshold_vals(img_data, img, pixels_all, img_name)-> dict:
+def calculate_threshold_vals(img_data, img, pixels_all, img_name, octane=False)-> dict:
     '''
     Calculates absolute and relative amount of pixels of given color specified by COLOR_THRESHOLDS
     '''
@@ -75,6 +75,91 @@ def calculate_threshold_vals(img_data, img, pixels_all, img_name)-> dict:
 
     return update_img_data
 
+def get_center_axies(h,w):
+    centerX, centerY = (w//2), (h//2)
+    return (centerX, centerY)
+
+def calculete_for_quarters(axisX, axisY, img, quarters_img_data, w, h):
+    update_quarters_img_data = quarters_img_data
+    quarters_list = [img[0:axisY, 0:axisX],img[0:axisY, axisX:w],img[axisY:h, 0:axisX],img[axisY:h, axisX:w]]
+    # quarters = {
+    #     'topLeft':img[0:axisY, 0:axisX],
+    #     'topRight':img[0:axisY, axisX:w],
+    #     'bottomLeft':img[axisY:h, 0:axisX],
+    #     'bottomRight':img[axisY:h, axisX:w],
+    # }
+    # print(quarters)
+
+    
+    for quarter in quarters_list:
+        img_data = {}
+        pixels_all = quarter.shape[0]*quarter.shape[1]
+        update_quarters_img_data.append(calculate_threshold_vals(img_data, quarter, pixels_all, f'quarters_{quarters_list.index(quarter)}', octane=True)) 
+        cv2.imshow(f'{quarters_list.index(quarter)}', quarter)
+        cv2.waitKey(0)
+
+
+    # for k, v in quarters.keys():
+    #     img_data = {
+    #         'raster_img': k,
+    #         'pixels_all': axisX*axisY
+    #     }
+    #     update_quareters_img_data.append(calculate_threshold_vals(img_data, v, pixels_all, k, octane=True)) 
+
+    return update_quarters_img_data
+
+
+def octant_analysis(h,w, img):
+    quarters_img_data = []
+    axisX_half, axisY_half = get_center_axies(h, w)
+    # print(axisX, axisY)
+
+
+    # first quadrant  
+    # TODO - dodelat quadranty -  takhle je to dobře
+    axisX_quarter, axisY_quarter = get_center_axies(axisX_half, axisY_half)
+    print(axisX_quarter, axisY_quarter)
+    topLeft = img[0:axisY_quarter, 0:axisX_quarter]
+    cv2.imshow('topleft',topLeft)
+    print(calculate_threshold_vals({}, topLeft, topLeft.shape[0] * topLeft.shape[1], 'top_left'))
+    topRight = img[0:axisY_quarter, axisX_quarter:axisX_half]
+    cv2.imshow('topright', topRight)
+    print(calculate_threshold_vals({}, topRight, topRight.shape[0] * topRight.shape[1], 'top_right'))
+    # bottomLeft = img[axisY:h, 0:axisX]
+    # bottomRight = img[axisY:h, axisX:w]
+    cv2.waitKey(0)
+
+    # print(axisX, axisY)
+    # quarters_img_data.append(calculete_for_quarters(axisX, axisY, img, quarters_img_data, w, h)) 
+
+    # axisX, axisY = get_center_axies(h, w)
+    # # second quadrant 
+    # axisX = axisX+axisX//2 
+    # axisY = axisY-axisY//2
+    # quarters_img_data.append(calculete_for_quarters(axisX, axisY, img, quarters_img_data, w, h)) 
+
+    # axisX, axisY = get_center_axies(h, w)
+    # #third quadrant
+    # axisX = axisX - axisX//2
+    # axisY = axisY + axisY//2
+    # quarters_img_data.append(calculete_for_quarters(axisX, axisY, img, quarters_img_data, w, h)) 
+
+    # axisX, axisY = get_center_axies(h, w)
+    # #fourth quadrant
+    # axisX = axisX + axisX//2
+    # axisY = axisY + axisY//2
+    # quarters_img_data.append(calculete_for_quarters(axisX, axisY, img, quarters_img_data, w, h)) 
+
+    return quarters_img_data
+
+
+
+    # topLeft = image[0:centerY, 0:centerX]
+    # topRight = image[centerX:w, 0:centerY]
+
+    return 
+
+
 def get_image_statistics(images_to_compute:list) -> list:
     '''
     Calculates general statistics for img
@@ -99,8 +184,13 @@ def get_image_statistics(images_to_compute:list) -> list:
             'channels': channels,
             'pixels_all': pixels_all
         }
+        data.append(octant_analysis(height, width, loaded_img))
 
-        data.append(calculate_threshold_vals(img_data, loaded_img, pixels_all, img_name))
+        break
+
+        # data.append(calculate_threshold_vals(img_data, loaded_img, pixels_all, img_name))
+
+    print(data)
     return data
 
 
@@ -110,7 +200,7 @@ def main():
     '''
     images_to_compute = [os.path.join(IN_IMG_PATH, img_p)for img_p in os.listdir(IN_IMG_PATH)]
     get_image_statistics(images_to_compute)
-    export_to_csv(get_image_statistics(images_to_compute)) 
+    # export_to_csv(get_image_statistics(images_to_compute)) 
 pass
 
 

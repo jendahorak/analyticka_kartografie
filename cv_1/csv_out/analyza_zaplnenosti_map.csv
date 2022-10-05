@@ -1,6 +1,0 @@
-raster_name,height,width,channels,pixels_all,black,grey,green,blue,red,brown,black_relative,grey_relative,green_relative,blue_relative,red_relative,brown_relative
-data_50_8bit.tif,2362,2362,3,5579044,451,9,0,0,0.0,0.0,0.01,0.0,0.0,0.0,0.0,0.0
-zm_100_8bit.tif,2362,2362,3,5579044,102306,100581,0,0,0.0,0.0,1.83,1.8,0.0,0.0,0.0,0.0
-zm_10_8bit.tif,2362,2362,3,5579044,12823,21075,0,0,0.0,0.0,0.23,0.38,0.0,0.0,0.0,0.0
-zm_25_8bit.tif,2362,2362,3,5579044,60807,0,0,0,0.0,0.0,1.09,0.0,0.0,0.0,0.0,0.0
-zm_50_8bit.tif,2362,2362,3,5579044,0,0,0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
