@@ -122,10 +122,12 @@ def octant_analysis(h,w, img):
     topLeft = img[0:axisY_quarter, 0:axisX_quarter]
     cv2.imshow('topleft',topLeft)
     print(calculate_threshold_vals({}, topLeft, topLeft.shape[0] * topLeft.shape[1], 'top_left'))
+    
     topRight = img[0:axisY_quarter, axisX_quarter:axisX_half]
     cv2.imshow('topright', topRight)
     print(calculate_threshold_vals({}, topRight, topRight.shape[0] * topRight.shape[1], 'top_right'))
-    # bottomLeft = img[axisY:h, 0:axisX]
+    
+    bottomLeft = img[axisY_quarter:axisY_half, 0:axisX_quarter]
     # bottomRight = img[axisY:h, axisX:w]
     cv2.waitKey(0)
 
