@@ -3,22 +3,28 @@ import numpy as np
 import os
 import csv
 
+<<<<<<< HEAD
 IN_IMG_PATH = 'cv_1\img'
 OUT_IMG_PATH = 'cv_1\out_img'
 CSV_FOLDER_PATH = 'cv_1\csv_out'
+=======
+IN_IMG_PATH = 'img'
+OUT_IMG_PATH = 'out_img'
+CSV_FOLDER_PATH = 'csv_out'
+>>>>>>> 7814cfa9c93cedfd7c917d4c94d501b815f91b8a
 COLOR_THRESHOLDS = {
-    'black': {'min': [0,0,0], 'max': [15,15,15]},
-    'grey': {'min': [57,57,57], 'max': [72,72,72]},
-    'green': {'min': [15,90,25], 'max': [20,100,30]},
-    'blue': {'min': [8,66,178], 'max': [23,78,200]},
-    'red': {'min': [200,15,79], 'max': [210,25,95]},
-    'brown': {'min': [210,130,195], 'max': [221,145,215]},
-}
+    'black': {'min': [0,0,0], 'max': [20,20,20]},
+    'grey': {'min': [50,50,50], 'max': [90,90,90]},
+    'blue': {'min': [0,30,60], 'max': [10,102,202]},
+    'green': {'min': [0,40,0], 'max': [30,132,60]},
+    'brown': {'min': [190,80,30], 'max': [240,150,74]},
+    'red': {'min': [180,0,20], 'max': [205,10,55]}
+    }
 
 
 def export_to_csv(data) -> None:
     csv_file = os.path.join(CSV_FOLDER_PATH, 'analyza_zaplnenosti_map.csv')
-    with open(csv_file, 'w', newline='') as csv_file:
+    with open(csv_file, 'w', newline='') as csv_file:           
         fieldnames = data[0].keys()
         writer = csv.DictWriter(csv_file, fieldnames)
         writer.writeheader()
@@ -39,33 +45,36 @@ def calculate_threshold_vals(img_data, img, pixels_all, img_name, octane=False)-
     '''
     update_img_data = img_data
     color_sum = 0
+    relative_sum = 0    
     relative_color_counts = {}
     masks = []
+    color_thresholds_changing = COLOR_THRESHOLDS
 
     for color, values in COLOR_THRESHOLDS.items():
-        color_min = np.array(values.get('min')[::-1])
-        color_max = np.array(values.get('max')[::-1])
-        # print(color_min, color_max)
+        color_min = np.array(values.get('min')[::-1], np.uint8)
+        color_max = np.array(values.get('max')[::-1], np.uint8)
+        
 
         image_mask = cv2.inRange(img, color_min, color_max)
         masks.append(image_mask)
         # write mask for each color
-        # write_img(image_mask, f'{img_name}_{color}')
 
         count_pixels = cv2.countNonZero(image_mask)
 
         if color == 'red' or color == 'brown':
-            count_pixels /=  4
+            count_pixels //=  4
 
         color_sum += count_pixels
 
         update_img_data[color] = count_pixels
         relative_color_counts[color] = (round((count_pixels / pixels_all)  * 100, 2))
+    
 
-        
     for c, v in relative_color_counts.items():
+        relative_sum += v
         update_img_data[f'{c}_relative'] = v
     
+    update_img_data['relative_sum'] = relative_sum
     # write composite mask for all colors
     final_mask = masks[0]
     for mask in masks[1:]:
@@ -168,7 +177,7 @@ def get_image_statistics(images_to_compute:list) -> list:
     '''
     data = []
     for img in images_to_compute:
-        loaded_img = cv2.imread(img)
+        loaded_img = cv2.imread(img, cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH)
 
         img_data = {}
 
