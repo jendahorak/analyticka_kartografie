@@ -34,7 +34,7 @@ def write_img(img, img_name) -> None:
     pass
 
 
-def calculate_threshold_vals(img_data, img, pixels_all: int, img_name: str, octane_masks_arr: list, octane_masks=False) -> dict:
+def calculate_threshold_vals(img_data, img, pixels_all: int, octane_masks=False) -> dict:
     '''
     Calculates absolute and relative amount of pixels of given color specified by COLOR_THRESHOLDS
     '''
@@ -61,8 +61,9 @@ def calculate_threshold_vals(img_data, img, pixels_all: int, img_name: str, octa
         color_sum += count_pixels
 
         update_img_data[color] = count_pixels
-        relative_color_counts[color] = (
-            round((count_pixels / pixels_all) * 100, 2))
+        relative_color_counts[color] = (round((count_pixels / pixels_all) * 100, 2))
+
+    
 
     for c, v in relative_color_counts.items():
         relative_sum += v
@@ -70,14 +71,15 @@ def calculate_threshold_vals(img_data, img, pixels_all: int, img_name: str, octa
 
     update_img_data['relative_sum'] = relative_sum
     # write composite mask for all colors
+
     final_mask = masks[0]
     for mask in masks[1:]:
         final_mask = final_mask | mask
 
-    if octane_masks:
-        octane_masks_arr.append(final_mask)
-    else:
-        write_img(final_mask, f'{img_name}_composite')
+
+    # if octane_masks == True:
+        # write_img(final_mask, f'{img_name}_eight')
+        # update_img_data['raster_name'] = img_name
 
     return update_img_data
 
@@ -100,7 +102,6 @@ def halve_img(h, w, img):
 
     for k, v in quarters.items():
         quartered.append(v)
-
     return quartered
 
 
@@ -113,24 +114,12 @@ def octant_analysis(h, w, img):
         for e in eights:
             eights_unpacked.append(e)
 
-    # TODO - export for all udelat puzzliky v inkscapu or gde idk
-
-    # for lr in left_rights:
-    #     # grayImageBGRspace = cv2.cvtColor(lr,cv2.COLOR_GRAY2BGR)
-    #     cv2.imshow('a', lr)
-    #     cv2.waitKey(0)
-
-    for eight in eights_unpacked:
-        
-        cv2.imshow('a', eight)
-        cv2.waitKey(0)
-
-    return
+    return eights_unpacked
 
 
 def get_image_statistics(images_to_compute: list) -> list:
     '''
-    Calculates general statistics for img
+    Calculates gceneral statistics for img
     '''
     data = []
     for img in images_to_compute:
@@ -153,10 +142,30 @@ def get_image_statistics(images_to_compute: list) -> list:
             'pixels_all': pixels_all
         }
 
-        octant_analysis(height, width, loaded_img)
+
+
+        eight_count = 1
+                            
+        for eight in octant_analysis(height, width, loaded_img):
+            img_data_eights = {
+                'raster_name': f'{img_name}_{eight_count}',
+                'height': eight.shape[0],
+                'width': eight.shape[1],
+                'channels': eight.shape[2],
+                'pixels_all': eight.shape[0]*eight.shape[1]
+            }
+            
+            img_data['raster_name'] = f'{img_name}_{eight_count}'
+
+            data.append(calculate_threshold_vals(img_data_eights, eight, pixels_all, octane_masks=True))
+            eight_count +=1
+
+            # cv2.imshow('a', eight)
+            # cv2.waitKey(0)
+        
+
 
         break
-
         # if img_name == 'zm_10_24bit':
         #     data.append(calculate_threshold_vals(img_data, loaded_img, pixels_all, img_name))
         #     data.append(octant_analysis(height, width, loaded_img))
@@ -174,7 +183,8 @@ def main():
     images_to_compute = [os.path.join(IN_IMG_PATH, img_p)
                          for img_p in os.listdir(IN_IMG_PATH)]
     print(images_to_compute)
-    get_image_statistics(images_to_compute)
+    export_to_csv(get_image_statistics(images_to_compute)) 
+
 
     # export_to_csv(get_image_statistics(images_to_compute))
 pass
