@@ -107,14 +107,16 @@ def halve_img(h, w, img):
 
 def octant_analysis(h, w, img):
     quartered = halve_img(h, w, img)
-    eights_unpacked = []
+    sixteenths_unpacked = []
 
     for q in quartered:
         eights = halve_img(q.shape[0], q.shape[1], q)
         for e in eights:
-            eights_unpacked.append(e)
+            for s in halve_img(e.shape[0], e.shape[1], e):
+                sixteenths_unpacked.append(s)
 
-    return eights_unpacked
+    print(sixteenths_unpacked)
+    return sixteenths_unpacked
 
 
 def get_image_statistics(images_to_compute: list) -> list:
@@ -146,18 +148,20 @@ def get_image_statistics(images_to_compute: list) -> list:
 
         eight_count = 1
                             
-        for eight in octant_analysis(height, width, loaded_img):
+        for sixteeth in octant_analysis(height, width, loaded_img):
+
             img_data_eights = {
                 'raster_name': f'{img_name}_{eight_count}',
-                'height': eight.shape[0],
-                'width': eight.shape[1],
-                'channels': eight.shape[2],
-                'pixels_all': eight.shape[0]*eight.shape[1]
+                'height': sixteeth.shape[0],
+                'width': sixteeth.shape[1],
+                'channels': sixteeth.shape[2],
+                'pixels_all': sixteeth.shape[0]*sixteeth.shape[1],
+                'grid_pk': eight_count
             }
             
             img_data['raster_name'] = f'{img_name}_{eight_count}'
 
-            data.append(calculate_threshold_vals(img_data_eights, eight, pixels_all, octane_masks=True))
+            data.append(calculate_threshold_vals(img_data_eights, sixteeth, pixels_all, octane_masks=True))
             eight_count +=1
 
             # cv2.imshow('a', eight)
